@@ -1,0 +1,33 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/server",
+            "binaryArgs": [
+                "8080",
+                "5",
+                "3",
+                "block"
+            ]
+        },
+        {
+            "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/server",
+            "binaryArgs": [
+                "8080",
+                "1",
+                "3",
+                "block"
+            ]
+        },
+        {
+            "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/client",
+            "binaryArgs": [
+                "localhost",
+                "8080",
+                "home.html"
+            ]
+        },
+    ]
+}
