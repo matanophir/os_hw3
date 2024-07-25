@@ -1,6 +1,8 @@
 #ifndef __REQUEST_H__
 #define __REQUEST_H__
 
+#include "taskq.h"
+
 typedef struct 
 {
    int fd;
@@ -8,7 +10,9 @@ typedef struct
    char method[MAXLINE];
    char uri[MAXLINE];
    char version[MAXLINE];
-   rio_t rio
+   rio_t rio;
+   struct timeval arrival;
+   struct timeval dispatch;
 } request;
 
 typedef struct Threads_stats{
@@ -16,11 +20,11 @@ typedef struct Threads_stats{
 	int stat_req;
 	int dynm_req;
 	int total_req;
-} * threads_stats;
+}  threads_stats;
 
 void requestHandle(request *req);
 
-void reqInit (request *req,int fd);
+void reqInit (request *req,Task *task);
 int isSkip(const char *str );
 
 #endif

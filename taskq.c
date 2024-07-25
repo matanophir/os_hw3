@@ -6,6 +6,10 @@
 #include "taskq.h"
 #include "segel.h"
 
+#define container_of(ptr, type, member) \
+ ((type *)                              \
+   (  ((char *)(ptr))                   \
+    - ((char *)(&((type*)0)->member)) ))
 
 Taskq* createTaskq(int max_size, char *policy)
 {
@@ -42,7 +46,7 @@ Taskq* createTaskq(int max_size, char *policy)
     return taskq;
 }
 
-void add_task(Taskq *q, int fd, struct timeval *arrival)
+void add_task(Taskq *q, Task task)
 {
     pthread_mutex_lock(q->lock);
 
@@ -57,14 +61,14 @@ void add_task(Taskq *q, int fd, struct timeval *arrival)
             }
             break;
         case 2 : //dt
-            Close(fd);
+            Close(task.fd);
             goto ret;
             break;
         case 3: // dh
             if (q->waiting->size != 0)
             {
-                int old_fd = dequeue(q->waiting);
-                Close(old_fd);
+                Task old_task = dequeue(q->waiting);
+                Close(old_task.fd);
             }else
             {
                 while (q->waiting->size + q->running->size == q->max_size)
@@ -78,7 +82,7 @@ void add_task(Taskq *q, int fd, struct timeval *arrival)
             {
                 pthread_cond_wait(q->empty, q->lock);
             }
-            Close(fd);
+            Close(task.fd);
             goto ret;
             break;
         case 5 : //random
@@ -89,7 +93,7 @@ void add_task(Taskq *q, int fd, struct timeval *arrival)
             break;
         }
     }
-    enqueue(q->waiting, fd, arrival);
+    enqueue(q->waiting, &task);
     pthread_cond_signal(q->has_elements);
 ret:
     pthread_mutex_unlock(q->lock);
@@ -99,34 +103,35 @@ ret:
 Task* get_task(Taskq *q)
 {
     pthread_mutex_lock(q->lock);
-    Task *task;
+    Node *node;
     while (q->waiting->size == 0){
         pthread_cond_wait(q->has_elements, q->lock);
     }
-    int fd = dequeue(q->waiting);
-    task = enqueue(q->running, fd, NULL);
+    Task task = dequeue(q->waiting);
+    node = enqueue(q->running, &task);
     pthread_mutex_unlock(q->lock);
-    return task;
+    return &node->task;
 
 }
 
 Task* get_last_task(Taskq *q)
 {
     pthread_mutex_lock(q->lock);
-    Task *task;
+    Node *node;
     while (q->waiting->size == 0){
         pthread_cond_wait(q->has_elements, q->lock);
     }
-    int fd = popLast(q->waiting);
-    task = enqueue(q->running, fd, NULL);
+    Task task = popLast(q->waiting);
+    node = enqueue(q->running, &task);
     pthread_mutex_unlock(q->lock);
-    return task;
+    return &node->task;
 }
 
 void mark_done(Taskq *q, Task *task)
 {
     pthread_mutex_lock(q->lock);
-    removeTask(q->running, task);
+    Node* node = container_of(task, Node, task);
+    removeNode(q->running, node);
     pthread_cond_signal(q->has_room);
     if (q->waiting->size + q->running->size == 0)
         pthread_cond_signal(q->empty);

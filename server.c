@@ -13,6 +13,10 @@
 // Repeatedly handles HTTP requests sent to this port number.
 // Most of the work is done within routines written in request.c
 //
+typedef struct {
+    Taskq* taskq;
+    int id;
+} ThreadParams;
 
 // HW3: Parse the new arguments too
 void getargs(int *port,int *threads,int *queue_size,char** schedlag, int argc, char *argv[])
@@ -35,15 +39,22 @@ void getargs(int *port,int *threads,int *queue_size,char** schedlag, int argc, c
     exit(1);
     }
 }
-void* worker_func(void* queue)
+void* worker_func(void* parameters)
 {
+    ThreadParams *params= (ThreadParams*)parameters;
+    Taskq* q = params->taskq;
+    int id = params->id;
+    free(parameters);
+
+    threads_stats stats = {.id = id, .stat_req = 0, .dynm_req = 0, .total_req = 0};
     Task* task;
-    request req;
-    Taskq* q = (Taskq*)queue; //for debugging 
+    request req;;
+
+
     while (1)
     {
         task = get_task(q);
-        reqInit(&req, task->data); // a request can handled once for now. cause socket read.
+        reqInit(&req, task); // a request can handled once for now. cause socket read.
         // requestHandle(&req);
         // Close(task->data);
         // mark_done(q, task);
@@ -53,19 +64,19 @@ void* worker_func(void* queue)
         {
             Task* skip_task = get_last_task(q);
             request req_skip;
-            reqInit(&req_skip, skip_task->data);
+            reqInit(&req_skip, skip_task);
             requestHandle(&req);
-            Close(task->data);
+            Close(task->fd);
             mark_done(q, task);
 
             requestHandle(&req_skip);
-            Close(skip_task->data);
+            Close(skip_task->fd);
             mark_done(q, skip_task);
             continue;
         }else
         {
             requestHandle(&req);
-            Close(task->data);
+            Close(task->fd);
             mark_done(q, task);
         }
         
@@ -82,18 +93,23 @@ int main(int argc, char *argv[])
     char *schedlag;
     struct sockaddr_in clientaddr;
     struct timeval arrival;
+    Task task;
 
     getargs(&port,&threads, &queue_size, &schedlag, argc, argv);
 
     Taskq *task_q = createTaskq(queue_size, schedlag);
     pthread_t *threads_arr = malloc(sizeof(pthread_t)*threads);
 
+
     // 
     // HW3: Create some threads...
     //
     for (int i = 0; i < threads; i++)
     {
-        pthread_create(&threads_arr[i],NULL, worker_func, (void*)task_q);
+        ThreadParams *params = malloc(sizeof(ThreadParams));
+        params->id = i;
+        params->taskq = task_q;
+        pthread_create(&threads_arr[i],NULL, worker_func, (void*)params);
     }
 
     listenfd = Open_listenfd(port);
@@ -108,7 +124,9 @@ int main(int argc, char *argv[])
 	// do the work. 
 	// 
     gettimeofday(&arrival, NULL);
-    add_task(task_q,connfd, &arrival);
+    task.fd = connfd;
+    task.arrival = arrival;
+    add_task(task_q,task);
 
 	// requestHandle(connfd);
 	// Close(connfd);

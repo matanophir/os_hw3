@@ -3,23 +3,19 @@
 #include "queue.h"
 #include "segel.h"
 
-// Function to create a new task
-Task* createTask(int data, struct timeval *arrival) {
-    Task* newTask = (Task*)malloc(sizeof(Task));
-    if (!newTask) {
+Node* createNode(Task *task)
+{
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) {
         printf("Memory error\n");
         return NULL;
     }
-    newTask->data = data;
-    if (arrival != NULL){
-        newTask->_arrival = *arrival;
-        newTask->arrival = &newTask->_arrival;
-    }else{
-        newTask->arrival = NULL;
-    }
-    newTask->next = NULL;
-    newTask->prev = NULL;
-    return newTask;
+    newNode->task.fd = task->fd;
+    newNode->task.arrival = task->arrival;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+    return newNode;
+
 }
 
 // Function to create a queue
@@ -34,30 +30,30 @@ Queue* createQueue() {
     return queue;
 }
 
-// Function to enqueue an element to the queue
-Task* enqueue(Queue* queue, int data, struct timeval *arrival) {
-    Task* newTask = createTask(data, arrival);
-    if (!newTask) return NULL;
+Node* enqueue(Queue* queue, Task *task)
+{
+    Node* newNode = createNode(task);
+    if (!newNode) return NULL;
     if (queue->rear == NULL) {
-        queue->front = queue->rear = newTask;
+        queue->front = queue->rear = newNode;
     } else {
-        queue->rear->next = newTask;
-        newTask->prev = queue->rear;
-        queue->rear = newTask;
+        queue->rear->next = newNode;
+        newNode->prev = queue->rear;
+        queue->rear = newNode;
     }
     queue->size++;
-    return newTask;
+    return newNode;
 }
 
-
-// Function to dequeue an element from the queue
-int dequeue(Queue* queue) {
+Task dequeue(Queue* queue)
+{
     if (queue->front == NULL) {
         printf("Queue is empty\n");
-        return -1;
+        Task t = {-1, {0,0}};
+        return t;
     }
-    Task* temp = queue->front;
-    int data = temp->data;
+    Node* temp = queue->front;
+    Task task = temp->task;
     queue->front = queue->front->next;
     if (queue->front == NULL) {
         queue->rear = NULL;
@@ -66,43 +62,48 @@ int dequeue(Queue* queue) {
     }
     free(temp);
     queue->size--;
-    return data;
+    return task;
+
 }
 
-// Function to get the size of the queue
-int size(Queue* queue) {
+int size(Queue* queue)
+{
     return queue->size;
 }
 
-// Function to remove a task from the middle of the queue
-void removeTask(Queue* queue, Task* task) {
-    if (queue->front == NULL || task == NULL) return;
-    if (task == queue->front) {
-        dequeue(queue);
-        return;
+//remove from the middle of the list
+Task removeNode(Queue* queue, Node* node)
+{
+    Task task = {-1, {0, 0}};
+    if (queue->front == NULL || node == NULL) return task;
+    if (node == queue->front) {
+        return dequeue(queue);
     }
-    if (task == queue->rear) {
-        queue->rear = task->prev;
+    task = node->task;
+    if (node == queue->rear) {
+        queue->rear = node->prev;
         queue->rear->next = NULL;
-        free(task);
+        free(node);
         queue->size--;
-        return;
+        return task;
     }
-    task->prev->next = task->next;
-    task->next->prev = task->prev;
-    free(task);
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    free(node);
     queue->size--;
+    return task;
+
 }
 
-
-// Function to pop the last element from the queue
-int popLast(Queue* queue) {
+Task popLast(Queue* queue)
+{
+    Task task = {-1, {0, 0}};
     if (queue->rear == NULL) {
         printf("Queue is empty\n");
-        return -1;
+        return task;
     }
-    Task* temp = queue->rear;
-    int data = temp->data;
+    Node* temp = queue->rear;
+    task = temp->task;
     queue->rear = queue->rear->prev;
     if (queue->rear == NULL) {
         queue->front = NULL;
@@ -111,14 +112,15 @@ int popLast(Queue* queue) {
     }
     free(temp);
     queue->size--;
-    return data;
+    return task;
 }
+
 
 // Function to print the queue
 void printQueue(Queue* queue) {
-    Task* temp = queue->front;
+    Node* temp = queue->front;
     while (temp != NULL) {
-        printf("%d -> ", temp->data);
+        printf("%d -> ", temp->task.fd);
         temp = temp->next;
     }
     printf("NULL\n");

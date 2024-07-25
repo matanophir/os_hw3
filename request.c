@@ -164,12 +164,18 @@ int isSkip(const char *str )
 
 
 
-void reqInit (request *req,int fd)
+void reqInit (request *req,Task *task)
 {
-   req-> fd = fd;
-   Rio_readinitb(&req->rio, fd);
+   struct timeval now;
+   gettimeofday(&now, NULL);
+   req-> fd = task->fd;
+   Rio_readinitb(&req->rio, req->fd);
    Rio_readlineb(&req->rio, req->buf, MAXLINE);
    sscanf(req->buf, "%s %s %s", req->method, req->uri, req->version);
+
+   req->arrival = task->arrival;
+   req->dispatch.tv_sec = now.tv_sec - req->arrival.tv_sec;
+   req->dispatch.tv_usec = now.tv_usec - req->arrival.tv_usec;
 }
 
 // handle a request

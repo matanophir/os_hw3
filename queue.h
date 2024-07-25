@@ -3,42 +3,45 @@
 
 #include "segel.h"
 
-// Define the structure for a task
 typedef struct Task {
-    int data;
-    struct timeval* arrival; //holds pointer to time
-    struct timeval _arrival; //holds the time
-    struct Task* next;
-    struct Task* prev;
+    int fd;
+    struct timeval arrival; //holds the time
 } Task;
+
+// Define the structure for a node
+typedef struct Node {
+    Task task;
+    struct Node* next;
+    struct Node* prev;
+} Node;
 
 // Define the structure for a queue
 typedef struct Queue {
-    Task* front;
-    Task* rear;
+    Node* front;
+    Node* rear;
     int size;
 } Queue;
 
-// Function to create a new task
-Task* createTask(int data, struct timeval *arrival) ;
+// Function to create a new node
+Node* createNode(Task *task) ;
 
 // Function to create a queue
 Queue* createQueue();
 
 // Function to enqueue an element to the queue
-Task* enqueue(Queue* queue, int data, struct timeval *arrival);
+Node* enqueue(Queue* queue, Task *task);
 
 // Function to dequeue an element from the queue
-int dequeue(Queue* queue);
+Task dequeue(Queue* queue);
 
 // Function to get the size of the queue
 int size(Queue* queue);
 
 // Function to remove a task from the middle of the queue
-void removeTask(Queue* queue, Task* task);
+Task removeNode(Queue* queue, Node* task);
 
 // Function to pop the last element from the queue
-int popLast(Queue* queue);
+Task popLast(Queue* queue);
 
 // Function to print the queue
 void printQueue(Queue* queue);

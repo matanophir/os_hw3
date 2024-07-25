@@ -16,7 +16,7 @@
             "binaryArgs": [
                 "8080",
                 "1",
-                "3",
+                "5",
                 "block"
             ]
         },
@@ -56,6 +56,8 @@
     ],
     "files.associations": {
         "segel.h": "c",
-        "request.h": "c"
+        "request.h": "c",
+        "pthread.h": "c",
+        "queue.h": "c"
     }
 }
