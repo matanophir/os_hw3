@@ -15,22 +15,22 @@
 //
 
 // HW3: Parse the new arguments too
-void getargs(int *port,int *threads,int *queue_size,char* schedlag, int argc, char *argv[])
+void getargs(int *port,int *threads,int *queue_size,char** schedlag, int argc, char *argv[])
 {
     if (argc < 5) {
 	fprintf(stderr, "Usage: %s <port> <threads> <queue_size> <schedlag>\n", argv[0]);
 	exit(1);
     }
-    *port = atoi(argv[1]);
+    *port = atoi(argv[1]); //TODO handle bad input..
     *threads = atoi(argv[2]);
     *queue_size = atoi(argv[3]);
-    schedlag = malloc(strlen(argv[4])+1);
-    strcpy(schedlag, argv[4]);
+    *schedlag = (char*)malloc(strlen(argv[4])+1);
+    strcpy(*schedlag, argv[4]);
     if (*threads < 1 || *queue_size < 1){
         fprintf(stderr, "threads and queue size must be a positive integer\n"); //TODO should check if double?
         exit(1);
     }
-    if (strcmp(schedlag, "block") != 0 && strcmp(schedlag, "dt") != 0 && strcmp(schedlag, "dh") != 0 && strcmp(schedlag, "bf") != 0 && strcmp(schedlag, "random") != 0) {
+    if (strcmp(*schedlag, "block") != 0 && strcmp(*schedlag, "dt") != 0 && strcmp(*schedlag, "dh") != 0 && strcmp(*schedlag, "bf") != 0 && strcmp(*schedlag, "random") != 0) {
     fprintf(stderr, "schedalg doesn't exist\n");
     exit(1);
     }
@@ -39,7 +39,6 @@ void* worker_func(void* queue)
 {
     Task* task;
     request req;
-    int ret_code;
     Taskq* q = (Taskq*)queue; //for debugging 
     while (1)
     {
@@ -82,10 +81,11 @@ int main(int argc, char *argv[])
     int threads, queue_size;
     char *schedlag;
     struct sockaddr_in clientaddr;
+    struct timeval arrival;
 
-    getargs(&port,&threads, &queue_size, schedlag, argc, argv);
+    getargs(&port,&threads, &queue_size, &schedlag, argc, argv);
 
-    Taskq *task_q = createTaskq(queue_size);
+    Taskq *task_q = createTaskq(queue_size, schedlag);
     pthread_t *threads_arr = malloc(sizeof(pthread_t)*threads);
 
     // 
@@ -97,6 +97,7 @@ int main(int argc, char *argv[])
     }
 
     listenfd = Open_listenfd(port);
+
     while (1) {
 	clientlen = sizeof(clientaddr);
 	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
@@ -106,7 +107,8 @@ int main(int argc, char *argv[])
 	// Save the relevant info in a buffer and have one of the worker threads 
 	// do the work. 
 	// 
-    add_task(task_q,connfd);
+    gettimeofday(&arrival, NULL);
+    add_task(task_q,connfd, &arrival);
 
 	// requestHandle(connfd);
 	// Close(connfd);

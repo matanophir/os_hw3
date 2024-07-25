@@ -1,15 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
+#include "segel.h"
 
 // Function to create a new task
-Task* createTask(int data) {
+Task* createTask(int data, struct timeval *arrival) {
     Task* newTask = (Task*)malloc(sizeof(Task));
     if (!newTask) {
         printf("Memory error\n");
         return NULL;
     }
     newTask->data = data;
+    if (arrival != NULL){
+        newTask->_arrival = *arrival;
+        newTask->arrival = &newTask->_arrival;
+    }else{
+        newTask->arrival = NULL;
+    }
     newTask->next = NULL;
     newTask->prev = NULL;
     return newTask;
@@ -28,8 +35,8 @@ Queue* createQueue() {
 }
 
 // Function to enqueue an element to the queue
-Task* enqueue(Queue* queue, int data) {
-    Task* newTask = createTask(data);
+Task* enqueue(Queue* queue, int data, struct timeval *arrival) {
+    Task* newTask = createTask(data, arrival);
     if (!newTask) return NULL;
     if (queue->rear == NULL) {
         queue->front = queue->rear = newTask;
@@ -41,6 +48,7 @@ Task* enqueue(Queue* queue, int data) {
     queue->size++;
     return newTask;
 }
+
 
 // Function to dequeue an element from the queue
 int dequeue(Queue* queue) {

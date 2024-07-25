@@ -1,9 +1,13 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include "segel.h"
+
 // Define the structure for a task
 typedef struct Task {
     int data;
+    struct timeval* arrival; //holds pointer to time
+    struct timeval _arrival; //holds the time
     struct Task* next;
     struct Task* prev;
 } Task;
@@ -16,13 +20,13 @@ typedef struct Queue {
 } Queue;
 
 // Function to create a new task
-Task* createTask(int data);
+Task* createTask(int data, struct timeval *arrival) ;
 
 // Function to create a queue
 Queue* createQueue();
 
 // Function to enqueue an element to the queue
-Task* enqueue(Queue* queue, int data);
+Task* enqueue(Queue* queue, int data, struct timeval *arrival);
 
 // Function to dequeue an element from the queue
 int dequeue(Queue* queue);

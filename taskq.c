@@ -33,15 +33,16 @@ Taskq* createTaskq(int max_size, char *policy)
         taskq->policy = BF;
     } else if (strcmp(policy, "random") == 0) {
         taskq->policy = RANDOM;
-    }else {
-        printf ("no such policy"); // TODO handle better?
-        taskq->policy = BLOCK;
     }
+    // else {
+    //     printf ("no such policy"); // will never get here because checking in the init
+    //     taskq->policy = BLOCK;
+    // }
 
     return taskq;
 }
 
-void add_task(Taskq *q, int fd)
+void add_task(Taskq *q, int fd, struct timeval *arrival)
 {
     pthread_mutex_lock(q->lock);
 
@@ -57,12 +58,12 @@ void add_task(Taskq *q, int fd)
             break;
         case 2 : //dt
             Close(fd);
-            return;
+            goto ret;
             break;
         case 3: // dh
             if (q->waiting->size != 0)
             {
-                int old_fd = dequeue(q);
+                int old_fd = dequeue(q->waiting);
                 Close(old_fd);
             }else
             {
@@ -77,7 +78,8 @@ void add_task(Taskq *q, int fd)
             {
                 pthread_cond_wait(q->empty, q->lock);
             }
-
+            Close(fd);
+            goto ret;
             break;
         case 5 : //random
 
@@ -87,8 +89,9 @@ void add_task(Taskq *q, int fd)
             break;
         }
     }
-    enqueue(q->waiting, fd);
+    enqueue(q->waiting, fd, arrival);
     pthread_cond_signal(q->has_elements);
+ret:
     pthread_mutex_unlock(q->lock);
 
 }
@@ -101,7 +104,7 @@ Task* get_task(Taskq *q)
         pthread_cond_wait(q->has_elements, q->lock);
     }
     int fd = dequeue(q->waiting);
-    task = enqueue(q->running, fd);
+    task = enqueue(q->running, fd, NULL);
     pthread_mutex_unlock(q->lock);
     return task;
 
@@ -115,7 +118,7 @@ Task* get_last_task(Taskq *q)
         pthread_cond_wait(q->has_elements, q->lock);
     }
     int fd = popLast(q->waiting);
-    task = enqueue(q->running, fd);
+    task = enqueue(q->running, fd, NULL);
     pthread_mutex_unlock(q->lock);
     return task;
 }

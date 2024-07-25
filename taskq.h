@@ -30,9 +30,9 @@ typedef struct Taskq
 } Taskq;
 
 
-Taskq* createTaskq(int max_size);
+Taskq* createTaskq(int max_size, char* policy);
 
-void add_task(Taskq *q, int fd);
+void add_task(Taskq *q, int fd, struct timeval *arrival);
 
 Task* get_task(Taskq *q); // get fd with task->data
 

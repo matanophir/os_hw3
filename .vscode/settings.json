@@ -22,6 +22,16 @@
         },
         {
             "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/server",
+            "binaryArgs": [
+                "8080",
+                "1",
+                "2",
+                "bf"
+            ]
+        },
+        {
+            "cwd": "/home/matan/os/hw3",
             "binaryPath": "/home/matan/os/hw3/client",
             "binaryArgs": [
                 "localhost",
@@ -29,5 +39,23 @@
                 "home.html"
             ]
         },
-    ]
+        {
+            "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/mtclient",
+            "binaryArgs": [
+                "localhost",
+                "8080",
+                "home.html"
+            ]
+        },
+        {
+            "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/server",
+            "binaryArgs": []
+        }
+    ],
+    "files.associations": {
+        "segel.h": "c",
+        "request.h": "c"
+    }
 }
