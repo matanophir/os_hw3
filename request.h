@@ -22,7 +22,7 @@ typedef struct Threads_stats{
 	int total_req;
 }  threads_stats;
 
-void requestHandle(request *req);
+void requestHandle(request *req, threads_stats* t_stats);
 
 void reqInit (request *req,Task *task);
 int isSkip(const char *str );
