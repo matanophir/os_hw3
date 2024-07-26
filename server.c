@@ -25,13 +25,17 @@ void getargs(int *port,int *threads,int *queue_size,char** schedlag, int argc, c
 	fprintf(stderr, "Usage: %s <port> <threads> <queue_size> <schedlag>\n", argv[0]);
 	exit(1);
     }
-    *port = atoi(argv[1]); //TODO handle bad input..
+    *port = atoi(argv[1]);
     *threads = atoi(argv[2]);
     *queue_size = atoi(argv[3]);
     *schedlag = (char*)malloc(strlen(argv[4])+1);
     strcpy(*schedlag, argv[4]);
+    if (*port == 0 || *threads == 0 || *queue_size == 0){
+        fprintf(stderr, "ine or more of the arguments is invalid"); 
+        exit(1);
+    }
     if (*threads < 1 || *queue_size < 1){
-        fprintf(stderr, "threads and queue size must be a positive integer\n"); //TODO should check if double?
+        fprintf(stderr, "threads and queue size must be a positive integer\n"); 
         exit(1);
     }
     if (strcmp(*schedlag, "block") != 0 && strcmp(*schedlag, "dt") != 0 && strcmp(*schedlag, "dh") != 0 && strcmp(*schedlag, "bf") != 0 && strcmp(*schedlag, "random") != 0) {
