@@ -31,7 +31,7 @@ void getargs(int *port,int *threads,int *queue_size,char** schedlag, int argc, c
     *schedlag = (char*)malloc(strlen(argv[4])+1);
     strcpy(*schedlag, argv[4]);
     if (*port == 0 || *threads == 0 || *queue_size == 0){
-        fprintf(stderr, "ine or more of the arguments is invalid"); 
+        fprintf(stderr, "ine or more of the arguments is invalid\n"); 
         exit(1);
     }
     if (*threads < 1 || *queue_size < 1){
