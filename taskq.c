@@ -86,6 +86,28 @@ void add_task(Taskq *q, Task task)
             goto ret;
             break;
         case 5 : //random
+        if (q->waiting->size == 0)
+            goto ret;
+        int *marks = calloc(q->waiting->size, sizeof(int));
+        int n_marks = 0;
+        int needed_marks = (q->waiting->size + 1) / 2;
+        int pos = 0;
+        while (n_marks != needed_marks)
+        {
+            if (marks[pos] == 0){
+                if (rand()%2 == 0){
+                    marks[pos] = 1;
+                    n_marks++;
+                }
+            }
+            pos = (pos + 1) % q->waiting->size;
+        }
+        close_and_remove_with_marks(q->waiting, marks);
+        if (needed_marks == 2){
+            pthread_cond_signal(q->has_room);
+        }else if (needed_marks > 2){ //could signal needed_marks times but why 
+            pthread_cond_broadcast(q->has_room);
+        }
 
             break;
         

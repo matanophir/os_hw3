@@ -32,6 +32,16 @@
         },
         {
             "cwd": "/home/matan/os/hw3",
+            "binaryPath": "/home/matan/os/hw3/server",
+            "binaryArgs": [
+                "8080",
+                "0",
+                "5",
+                "random"
+            ]
+        },
+        {
+            "cwd": "/home/matan/os/hw3",
             "binaryPath": "/home/matan/os/hw3/client",
             "binaryArgs": [
                 "localhost",

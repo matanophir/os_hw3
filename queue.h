@@ -11,6 +11,7 @@ typedef struct Task {
 // Define the structure for a node
 typedef struct Node {
     Task task;
+    int to_remove;
     struct Node* next;
     struct Node* prev;
 } Node;
@@ -42,6 +43,8 @@ Task removeNode(Queue* queue, Node* task);
 
 // Function to pop the last element from the queue
 Task popLast(Queue* queue);
+
+void close_and_remove_with_marks(Queue* queue, int* marks);
 
 // Function to print the queue
 void printQueue(Queue* queue);

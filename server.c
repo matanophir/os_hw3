@@ -48,7 +48,7 @@ void* worker_func(void* parameters)
 
     threads_stats stats = {.id = id, .stat_req = 0, .dynm_req = 0, .total_req = 0};
     Task* task;
-    request req;;
+    request req;
 
 
     while (1)
@@ -75,10 +75,7 @@ void* worker_func(void* parameters)
             Close(task->fd);
             mark_done(q, task);
         }
-        
-
     }
-    
 }
 
 

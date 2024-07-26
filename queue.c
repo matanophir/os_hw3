@@ -12,6 +12,7 @@ Node* createNode(Task *task)
     }
     newNode->task.fd = task->fd;
     newNode->task.arrival = task->arrival;
+    newNode->to_remove = 0;
     newNode->next = NULL;
     newNode->prev = NULL;
     return newNode;
@@ -115,6 +116,36 @@ Task popLast(Queue* queue)
     return task;
 }
 
+void close_and_remove_with_marks(Queue* queue, int* marks)
+{
+    if (queue->size == 0)
+        return;
+    
+    int i = 0;
+    Node *node = queue->front;
+    while (i < queue->size)
+    {
+        node->to_remove = marks[i];
+        if (marks[i] == 1)
+            Close(node->task.fd);
+        node = node->next;
+        i++;
+    }
+    node = queue->front;
+    while (node != NULL && node->to_remove == 1){
+        dequeue(queue);
+        node = queue->front;
+    }
+    if (queue->size == 0)
+        return;;
+    
+    while (node != NULL && node->next != NULL){
+        while (node->next != NULL && node->next->to_remove == 1){
+            removeNode(queue, node->next);
+        }
+        node = node->next;
+    }
+}
 
 // Function to print the queue
 void printQueue(Queue* queue) {
