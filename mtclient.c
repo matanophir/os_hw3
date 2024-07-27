@@ -22,6 +22,7 @@
  */
 
 #include "segel.h"
+#include <pthread.h>
 
 /*
  * Send an HTTP request for the specified file 
@@ -71,6 +72,7 @@ void clientPrint(int fd)
   }
 }
 
+
 void* c_exec(void* args)
 {
   char *host, *filename;
@@ -98,7 +100,7 @@ int main(int argc, char *argv[])
 //   char *host, *filename;
 //   int port;
 //   int clientfd;
-int n_threads = 2;
+int n_threads = 8;
 pthread_t threads[n_threads];
 
 if (argc != 4)
@@ -116,6 +118,7 @@ if (argc != 4)
 //   clientSend(clientfd, filename);
 //   clientPrint(clientfd);
 //   Close(clientfd);
+
 for (int i = 0; i < n_threads; i++)
 {
     pthread_create(&threads[i], NULL, c_exec, (void*)argv);

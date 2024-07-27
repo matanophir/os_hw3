@@ -112,9 +112,12 @@ void requestGetFiletype(char *filename, char *filetype)
       strcpy(filetype, "text/plain");
 }
 
-void requestServeDynamic(int fd, char *filename, char *cgiargs, struct timeval arrival, struct timeval dispatch, threads_stats *t_stats)
+void requestServeDynamic(int fd, char *filename, char *cgiargs, struct timeval arrival, struct timeval dispatch, threads_stats *t_stats )
 {
 	char buf[MAXLINE], *emptylist[] = {NULL};
+
+	// struct timeval start;
+	// struct timeval end;
 
 	// The server does only a little bit of the header.
 	// The CGI script has to finish writing out the header.
@@ -142,7 +145,10 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, struct timeval a
      	 Dup2(fd, STDOUT_FILENO);
      	 Execve(filename, emptylist, environ);
    	}
+        // gettimeofday(&start, NULL);// debug
   	WaitPid(pid, NULL, WUNTRACED);
+            // gettimeofday(&end, NULL); //debug
+            // printf("%d::%d wait time:%lu.%06lu\n",t_stats->total_req, t_stats->id, (end.tv_sec - start.tv_sec), (end.tv_usec - start.tv_usec)); // debug
 }
 
 
@@ -201,20 +207,17 @@ int isSkip(const char *str )
 
 void reqInit (request *req,Task *task)
 {
-   struct timeval now;
-   gettimeofday(&now, NULL);
    req-> fd = task->fd;
    Rio_readinitb(&req->rio, req->fd);
    Rio_readlineb(&req->rio, req->buf, MAXLINE);
    sscanf(req->buf, "%s %s %s", req->method, req->uri, req->version);
 
    req->arrival = task->arrival;
-   req->dispatch.tv_sec = now.tv_sec - req->arrival.tv_sec;
-   req->dispatch.tv_usec = now.tv_usec - req->arrival.tv_usec;
+   req->dispatch = task->dispatch;
 }
 
 // handle a request
-void requestHandle(request *req, threads_stats* t_stats)
+void requestHandle(request *req, threads_stats* t_stats )
 {
 
    int is_static;
@@ -265,6 +268,7 @@ void requestHandle(request *req, threads_stats* t_stats)
 		}
 		(t_stats->dynm_req)++;
 		requestServeDynamic(fd, filename, cgiargs, arrival, dispatch, t_stats);
+
 	}
 }
 

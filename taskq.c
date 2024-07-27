@@ -71,10 +71,12 @@ void add_task(Taskq *q, Task task)
                 Close(old_task.fd);
             }else
             {
-                while (q->waiting->size + q->running->size == q->max_size)
-                {
-                    pthread_cond_wait(q->has_room, q->lock);
-                }
+                // while (q->waiting->size + q->running->size == q->max_size)
+                // {
+                //     pthread_cond_wait(q->has_room, q->lock);
+                // }
+                Close(task.fd); //TODO how should hanlde?
+                goto ret;
             }
             break;
         case 4 : //bf
@@ -86,8 +88,15 @@ void add_task(Taskq *q, Task task)
             goto ret;
             break;
         case 5 : //random
-        if (q->waiting->size == 0)
+        if (q->waiting->size == 0){
+            // while (q->waiting->size + q->running->size == q->max_size)
+            // {
+            //     pthread_cond_wait(q->empty, q->lock);
+            // }
+            // break;
+            Close(task.fd); // TODO what should i do in this case? drop or wait?
             goto ret;
+        }
         int *marks = calloc(q->waiting->size, sizeof(int));
         int n_marks = 0;
         int needed_marks = (q->waiting->size + 1) / 2;
@@ -126,10 +135,14 @@ Task* get_task(Taskq *q)
 {
     pthread_mutex_lock(q->lock);
     Node *node;
+
     while (q->waiting->size == 0){
         pthread_cond_wait(q->has_elements, q->lock);
     }
     Task task = dequeue(q->waiting);
+    _fill_dispatch(&task);
+    // printf("in get_task:%lu.%06lu\n", task.dispatch.tv_sec, task.dispatch.tv_usec);
+
     node = enqueue(q->running, &task);
     pthread_mutex_unlock(q->lock);
     return &node->task;
@@ -144,20 +157,38 @@ Task* get_last_task(Taskq *q)
         pthread_cond_wait(q->has_elements, q->lock);
     }
     Task task = popLast(q->waiting);
+    _fill_dispatch(&task);
     node = enqueue(q->running, &task);
     pthread_mutex_unlock(q->lock);
     return &node->task;
 }
 
-void mark_done(Taskq *q, Task *task)
+Task mark_done(Taskq *q, Task *task)
 {
     pthread_mutex_lock(q->lock);
+    Task ret_task;
     Node* node = container_of(task, Node, task);
-    removeNode(q->running, node);
+    ret_task = removeNode(q->running, node);
+    _fill_finished(&ret_task);
     pthread_cond_signal(q->has_room);
     if (q->waiting->size + q->running->size == 0)
         pthread_cond_signal(q->empty);
 
     pthread_mutex_unlock(q->lock);
+    return ret_task;
 }
 
+void _fill_dispatch(Task* task)
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    task->dispatch.tv_sec = now.tv_sec - task->arrival.tv_sec;
+    task->dispatch.tv_usec = now.tv_usec - task->arrival.tv_usec;
+}
+void _fill_finished(Task* task)
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    task->finished.tv_sec = now.tv_sec - task->arrival.tv_sec;
+    task->finished.tv_usec = now.tv_usec - task->arrival.tv_usec;
+}

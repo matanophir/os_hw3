@@ -38,8 +38,10 @@ Task* get_task(Taskq *q);
 
 Task* get_last_task(Taskq *q);
 
-void mark_done(Taskq* q, Task *task);
+Task mark_done(Taskq* q, Task *task);
 
+void _fill_dispatch(Task* task);
+void _fill_finished(Task* task);
 
 
 #endif //TASKQ

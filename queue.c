@@ -12,6 +12,8 @@ Node* createNode(Task *task)
     }
     newNode->task.fd = task->fd;
     newNode->task.arrival = task->arrival;
+    newNode->task.dispatch = task->dispatch;
+    newNode->task.finished = task->finished;
     newNode->to_remove = 0;
     newNode->next = NULL;
     newNode->prev = NULL;

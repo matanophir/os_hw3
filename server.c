@@ -54,10 +54,20 @@ void* worker_func(void* parameters)
     Task* task;
     request req;
 
+    // struct timeval now;
+    // struct timeval start;
+    //     gettimeofday(&start, NULL);// debug
+    // struct timeval end;
 
     while (1)
     {
+
         task = get_task(q);
+        // gettimeofday(&start, NULL);// debug
+        //     gettimeofday(&end, NULL); //debug
+        //     printf("thread %d got task:%lu.%06lu\n", stats.id, (end.tv_sec - start.tv_sec), (end.tv_usec - start.tv_usec)); // debug
+        // printf("thread %d dispatch:%lu.%06lu\n",stats.id, task->dispatch.tv_sec, task->dispatch.tv_usec);
+
         reqInit(&req, task); // a request can handled once for now. cause socket read.
 
         if (isSkip(req.uri))
@@ -76,8 +86,11 @@ void* worker_func(void* parameters)
         }else
         {
             requestHandle(&req, &stats);
+
             Close(task->fd);
-            mark_done(q, task);
+
+            Task finished_task = mark_done(q, task);
+            // printf("thread %d finished:%lu.%06lu\n", stats.id, finished_task.finished.tv_sec, finished_task.finished.tv_usec);
         }
     }
 }

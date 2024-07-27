@@ -2,7 +2,7 @@
 # To compile, type "make" or make "all"
 # To remove files, type "make clean"
 #
-OBJS = server.o request.o segel.o client.o taskq.o queue.o mtclient.o
+OBJS = server.o request.o segel.o client.o taskq.o queue.o mtclient.o mtsegel.o
 TARGET = server
 
 CC = gcc
@@ -22,8 +22,8 @@ server: server.o request.o segel.o taskq.o queue.o
 client: client.o segel.o 
 	$(CC) $(CFLAGS) -o client client.o segel.o
 
-mtclient: mtclient.o
-	$(CC) $(CFLAGS) -o mtclient mtclient.o segel.o 
+mtclient: mtclient.o mtsegel.o
+	$(CC) $(CFLAGS) -o mtclient mtclient.o mtsegel.o 
 
 output.cgi: output.c
 	$(CC) $(CFLAGS) -o output.cgi output.c

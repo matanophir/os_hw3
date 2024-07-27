@@ -6,6 +6,8 @@
 typedef struct Task {
     int fd;
     struct timeval arrival; //holds the time
+    struct timeval dispatch; 
+    struct timeval finished; 
 } Task;
 
 // Define the structure for a node
