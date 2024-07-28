@@ -3,7 +3,7 @@
 #include "queue.h"
 #include "segel.h"
 
-Node* createNode(Task *task)
+Node* createNode(Task* task)
 {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (!newNode) {
@@ -33,7 +33,7 @@ Queue* createQueue() {
     return queue;
 }
 
-Node* enqueue(Queue* queue, Task *task)
+Node* enqueue(Queue* queue, Task* task)
 {
     Node* newNode = createNode(task);
     if (!newNode) return NULL;

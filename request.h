@@ -15,7 +15,7 @@ typedef struct
    struct timeval dispatch;
 } request;
 
-typedef struct Threads_stats{
+typedef struct {
 	int id;
 	int stat_req;
 	int dynm_req;

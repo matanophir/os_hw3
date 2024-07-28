@@ -54,23 +54,19 @@ void* worker_func(void* parameters)
     Task* task;
     request req;
 
-    // struct timeval now;
-    // struct timeval start;
-    //     gettimeofday(&start, NULL);// debug
-    // struct timeval end;
-
     while (1)
     {
-
         task = get_task(q);
-        // gettimeofday(&start, NULL);// debug
-        //     gettimeofday(&end, NULL); //debug
-        //     printf("thread %d got task:%lu.%06lu\n", stats.id, (end.tv_sec - start.tv_sec), (end.tv_usec - start.tv_usec)); // debug
-        // printf("thread %d dispatch:%lu.%06lu\n",stats.id, task->dispatch.tv_sec, task->dispatch.tv_usec);
 
         reqInit(&req, task); // a request can handled once for now. cause socket read.
 
-        if (isSkip(req.uri))
+        if (!isSkip(req.uri))
+        {
+            requestHandle(&req, &stats);
+
+            Close(task->fd);
+            mark_done(q, task);
+        }else
         {
             Task* skip_task = get_last_task(q);
             request req_skip;
@@ -82,15 +78,6 @@ void* worker_func(void* parameters)
             requestHandle(&req_skip, &stats);
             Close(skip_task->fd);
             mark_done(q, skip_task);
-            continue;
-        }else
-        {
-            requestHandle(&req, &stats);
-
-            Close(task->fd);
-
-            Task finished_task = mark_done(q, task);
-            // printf("thread %d finished:%lu.%06lu\n", stats.id, finished_task.finished.tv_sec, finished_task.finished.tv_usec);
         }
     }
 }
@@ -133,12 +120,14 @@ int main(int argc, char *argv[])
 	// Save the relevant info in a buffer and have one of the worker threads 
 	// do the work. 
 	// 
+
+
     gettimeofday(&arrival, NULL);
     task.fd = connfd;
     task.arrival = arrival;
     add_task(task_q,task);
 
-	// requestHandle(connfd);
+    // requestHandle(connfd);
 	// Close(connfd);
     }
 

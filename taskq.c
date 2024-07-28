@@ -5,6 +5,10 @@
 
 #include "taskq.h"
 #include "segel.h"
+#include <sys/time.h>
+
+#include "request.h"
+
 
 #define container_of(ptr, type, member) \
  ((type *)                              \
@@ -130,18 +134,16 @@ ret:
     pthread_mutex_unlock(q->lock);
 
 }
-
-Task* get_task(Taskq *q)
+Task* get_task(Taskq *q ) 
 {
     pthread_mutex_lock(q->lock);
-    Node *node;
+    Node *node; 
 
     while (q->waiting->size == 0){
         pthread_cond_wait(q->has_elements, q->lock);
     }
     Task task = dequeue(q->waiting);
     _fill_dispatch(&task);
-    // printf("in get_task:%lu.%06lu\n", task.dispatch.tv_sec, task.dispatch.tv_usec);
 
     node = enqueue(q->running, &task);
     pthread_mutex_unlock(q->lock);
@@ -182,13 +184,11 @@ void _fill_dispatch(Task* task)
 {
     struct timeval now;
     gettimeofday(&now, NULL);
-    task->dispatch.tv_sec = now.tv_sec - task->arrival.tv_sec;
-    task->dispatch.tv_usec = now.tv_usec - task->arrival.tv_usec;
+    timersub(&now, &task->arrival, &task->dispatch);
 }
 void _fill_finished(Task* task)
 {
     struct timeval now;
     gettimeofday(&now, NULL);
-    task->finished.tv_sec = now.tv_sec - task->arrival.tv_sec;
-    task->finished.tv_usec = now.tv_usec - task->arrival.tv_usec;
+    timersub(&now, &task->arrival, &task->finished);
 }

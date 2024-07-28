@@ -25,9 +25,9 @@
             "binaryPath": "/home/matan/os/hw3/server",
             "binaryArgs": [
                 "8080",
-                "2",
-                "4",
-                "dt"
+                "32",
+                "32",
+                "random"
             ]
         },
         {

@@ -116,8 +116,6 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, struct timeval a
 {
 	char buf[MAXLINE], *emptylist[] = {NULL};
 
-	// struct timeval start;
-	// struct timeval end;
 
 	// The server does only a little bit of the header.
 	// The CGI script has to finish writing out the header.
@@ -145,10 +143,7 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, struct timeval a
      	 Dup2(fd, STDOUT_FILENO);
      	 Execve(filename, emptylist, environ);
    	}
-        // gettimeofday(&start, NULL);// debug
   	WaitPid(pid, NULL, WUNTRACED);
-            // gettimeofday(&end, NULL); //debug
-            // printf("%d::%d wait time:%lu.%06lu\n",t_stats->total_req, t_stats->id, (end.tv_sec - start.tv_sec), (end.tv_usec - start.tv_usec)); // debug
 }
 
 
@@ -217,7 +212,7 @@ void reqInit (request *req,Task *task)
 }
 
 // handle a request
-void requestHandle(request *req, threads_stats* t_stats )
+void requestHandle(request *req, threads_stats* t_stats)
 {
 
    int is_static;
