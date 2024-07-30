@@ -69,15 +69,18 @@ void* worker_func(void* parameters)
         }else
         {
             Task* skip_task = get_last_task(q);
-            request req_skip;
-            reqInit(&req_skip, skip_task);
+
             requestHandle(&req, &stats);
             Close(task->fd);
             mark_done(q, task);
 
-            requestHandle(&req_skip, &stats);
-            Close(skip_task->fd);
-            mark_done(q, skip_task);
+            if (skip_task!=NULL){
+                request req_skip;
+                reqInit(&req_skip, skip_task);
+                requestHandle(&req_skip, &stats);
+                Close(skip_task->fd);
+                mark_done(q, skip_task);
+            }
         }
     }
 }

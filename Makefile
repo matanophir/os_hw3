@@ -2,7 +2,7 @@
 # To compile, type "make" or make "all"
 # To remove files, type "make clean"
 #
-OBJS = server.o request.o segel.o client.o taskq.o queue.o mtclient.o mtsegel.o
+OBJS = server.o request.o segel.o client.o taskq.o queue.o 
 TARGET = server
 
 CC = gcc
@@ -12,7 +12,7 @@ LIBS = -lpthread
 
 .SUFFIXES: .c .o 
 
-all: server client output.cgi mtclient
+all: server client output.cgi 
 	-mkdir -p public
 	-cp output.cgi favicon.ico home.html home.html.skip public
 
@@ -21,9 +21,6 @@ server: server.o request.o segel.o taskq.o queue.o
 
 client: client.o segel.o 
 	$(CC) $(CFLAGS) -o client client.o segel.o
-
-mtclient: mtclient.o mtsegel.o
-	$(CC) $(CFLAGS) -o mtclient mtclient.o mtsegel.o 
 
 output.cgi: output.c
 	$(CC) $(CFLAGS) -o output.cgi output.c

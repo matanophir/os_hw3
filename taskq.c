@@ -155,9 +155,13 @@ Task* get_last_task(Taskq *q)
 {
     pthread_mutex_lock(q->lock);
     Node *node;
-    while (q->waiting->size == 0){
-        pthread_cond_wait(q->has_elements, q->lock);
+    if (q->waiting->size == 0){
+        pthread_mutex_unlock(q->lock);
+        return NULL;
     }
+    // while (q->waiting->size == 0){
+    //     pthread_cond_wait(q->has_elements, q->lock);
+    // }
     Task task = popLast(q->waiting);
     _fill_dispatch(&task);
     node = enqueue(q->running, &task);
