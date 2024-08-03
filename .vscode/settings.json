@@ -5,8 +5,8 @@
             "binaryPath": "/home/matan/os/hw3/server",
             "binaryArgs": [
                 "8080",
-                "5",
-                "3",
+                "1",
+                "4",
                 "block"
             ]
         },

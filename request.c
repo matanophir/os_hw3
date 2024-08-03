@@ -230,12 +230,13 @@ void requestHandle(request *req, threads_stats* t_stats)
    // Rio_readlineb(&rio, buf, MAXLINE);
    // sscanf(buf, "%s %s %s", method, uri, version);
 
+   if (isSkip(uri))
+      uri[strlen(uri) - strlen(".skip")] = '\0';
+
    printf("%s %s %s\n", method, uri, version);
 
    (t_stats->total_req)++;
 
-   if (isSkip(uri))
-      uri[strlen(uri) - strlen(".skip")] = '\0';
 
 	if (strcasecmp(method, "GET")) {
 		requestError(fd, method, "501", "Not Implemented", "OS-HW3 Server does not implement this method", arrival, dispatch, t_stats);
